@@ -1,6 +1,7 @@
 import React from "react";
 import { useStore } from "./useGlobalStore";
 import { audioBlobStorage } from "./js-utils/LocalStorage";
+import { CacheStrategist } from "./js-utils/CacheStorage";
 
 const FileInput = () => {
   const inputUrlRef = React.useRef<HTMLInputElement>(null);
@@ -38,7 +39,10 @@ const FileInput = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(url);
+      const response = await CacheStrategist.cacheFirst(
+        new Request(url),
+        "audio-url-cache"
+      );
       const blob = await response.blob();
       console.log("Blob:", blob);
       const blobUrl = URL.createObjectURL(blob);

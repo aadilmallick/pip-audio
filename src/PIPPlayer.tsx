@@ -1,13 +1,22 @@
 import React, { useEffect } from "react";
 import { useStore } from "./useGlobalStore";
 import { AudioPlayer } from "./js-utils/AudioPlayer";
-import { PIPElement } from "./js-utils/PIP";
+import { css, PIPElement } from "./js-utils/PIP";
 import { createRoot } from "react-dom/client";
 
 export const PIPPlayer = () => {
   const { blobUrl } = useStore();
   const [pipPlayer, setPipPlayer] = React.useState<PIPElement | null>(null);
   const [inPipMode, setInPipMode] = React.useState(false);
+
+  const handleKeyDown = (event: KeyboardEvent, blobUrl: string) => {
+    const audioManager = new AudioPlayer(blobUrl);
+    if (event.key === "ArrowRight") {
+      audioManager.skip(10); // Seek forward 10 seconds
+    } else if (event.key === "ArrowLeft") {
+      audioManager.skip(-10); // Seek backward 10 seconds
+    }
+  };
 
   useEffect(() => {
     const pipElement = document.getElementById("audio-player");
@@ -41,10 +50,25 @@ export const PIPPlayer = () => {
                 if (pipWindow.document.body.querySelector("#audio-player")) {
                   return;
                 }
+                pipWindow.document.body.style.overflow = "hidden";
                 createRoot(pipWindow.document.body).render(
                   <AudioBlock blobUrl={blobUrl} />
                 );
+
                 pipWindow.document.body.style.backgroundColor = "white";
+                pipPlayer.addStylesToPipWindow({
+                  id: "prevent-resize",
+                  styles: css`
+                    body {
+                      max-width: 25rem;
+                      max-height: fit-content;
+                    }
+                  `,
+                });
+
+                pipWindow.document.addEventListener("keydown", (e) => {
+                  handleKeyDown(e, blobUrl);
+                });
               },
             });
           } catch (error) {
@@ -76,6 +100,23 @@ const AudioBlock = ({ blobUrl }: { blobUrl: string }) => {
   const [currentVolume, setCurrentVolume] = React.useState(
     audioManager.getVolume()
   );
+
+  // useEffect(() => {
+  // const handleKeyDown = (event: KeyboardEvent) => {
+  //   if (event.key === "ArrowRight") {
+  //     audioManager.skip(10); // Seek forward 10 seconds
+  //   } else if (event.key === "ArrowLeft") {
+  //     audioManager.skip(-10); // Seek backward 10 seconds
+  //   }
+  // };
+
+  //   document.addEventListener("keydown", handleKeyDown);
+
+  //   return () => {
+  //     document.removeEventListener("keydown", handleKeyDown);
+  //   };
+  // }, [audioManager]);
+
   //   const [audioLoaded, setAudioLoaded] = React.useState(
   //     audioManager.audioLoaded
   //   );
@@ -117,7 +158,7 @@ const AudioBlock = ({ blobUrl }: { blobUrl: string }) => {
   return (
     <div
       id="audio-player"
-      className="bg-white shadow-2xl min-w-[25rem] p-4 rounded-2xl border-gray-200 border-2"
+      className="bg-white shadow-2xl min-w-[12rem] max-w-[25rem] mx-auto p-4 rounded-2xl border-gray-200 border-2"
     >
       <p className="text-gray-400 text-center text-sm">{getProgress()}</p>
       <div className="relative">
@@ -137,7 +178,23 @@ const AudioBlock = ({ blobUrl }: { blobUrl: string }) => {
           }}
         ></input>
       </div>
-      <div className="flex justify-center items-center mt-2 gap-x-2">
+      <div className="flex justify-center items-center mt-2 gap-2 flex-wrap">
+        <button
+          className="text-blue-500 bg-white font-semibold h-8 w-8 p-1 rounded-full shadow-md hover:bg-gray-100 transition-colors duration-150 flex items-center cursor-pointer justify-center text-sm border-gray-200 border-2"
+          onClick={() => {
+            audioManager.skip(-10);
+          }}
+        >
+          <span>-10</span>
+        </button>
+        <button
+          className="text-blue-500 bg-white font-semibold h-8 w-8 p-1 rounded-full shadow-md hover:bg-gray-100 transition-colors duration-150 flex items-center cursor-pointer justify-center text-sm border-gray-200 border-2"
+          onClick={() => {
+            audioManager.skip(10);
+          }}
+        >
+          <span>+10</span>
+        </button>
         <SpeedChangeButton
           onChangeSpeed={(speed) => {
             audioManager.setSpeed(speed);
@@ -184,7 +241,7 @@ const PlayPauseButton: React.FC<PlayPauseButtonProps> = ({
   return (
     <button
       onClick={onClick}
-      className="bg-blue-500 text-white font-semibold h-10 w-10 p-1 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-150 flex items-center cursor-pointer justify-center text-lg"
+      className="bg-blue-500 text-white font-semibold h-10 w-10 min-h-10 min-w-10 p-1 rounded-full shadow-md hover:bg-blue-600 transition-colors duration-150 flex items-center cursor-pointer justify-center text-lg"
     >
       {isPlaying ? (
         // Pause SVG Icon
