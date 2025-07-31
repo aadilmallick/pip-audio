@@ -5,6 +5,8 @@ type Store = {
   blobUrl: string | null;
   setBlobUrl: (url: string | null) => void;
   clearBlobUrl: (url: string) => void;
+  selectedFile: FileSystemFileHandle | null;
+  setSelectedFile: (file: FileSystemFileHandle) => void;
 };
 
 export const useStore = create<Store>()((set) => ({
