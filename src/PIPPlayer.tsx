@@ -3,11 +3,24 @@ import { useStore } from "./useGlobalStore";
 import { AudioPlayer } from "./js-utils/AudioPlayer";
 import { css, PIPElement } from "./js-utils/PIP";
 import { createRoot } from "react-dom/client";
+import { FileSystemManager } from "./js-utils/OPFS";
 
 export const PIPPlayer = () => {
-  const { blobUrl } = useStore();
+  const { blobUrl, selectedFile, setBlobUrl } = useStore();
   const [pipPlayer, setPipPlayer] = React.useState<PIPElement | null>(null);
   const [inPipMode, setInPipMode] = React.useState(false);
+
+  useEffect(() => {
+    if (selectedFile) {
+      FileSystemManager.getFileDataFromHandle(selectedFile, {
+        type: "blobUrl",
+      }).then((url) => {
+        if (typeof url === "string") {
+          setBlobUrl(url);
+        }
+      });
+    }
+  }, [selectedFile, setBlobUrl]);
 
   const handleKeyDown = (event: KeyboardEvent, blobUrl: string) => {
     const audioManager = new AudioPlayer(blobUrl);
