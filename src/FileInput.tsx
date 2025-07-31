@@ -2,6 +2,7 @@ import React from "react";
 import { useStore } from "./useGlobalStore";
 import { audioBlobStorage } from "./js-utils/LocalStorage";
 import { CacheStrategist } from "./js-utils/CacheStorage";
+import { useOPFSStore } from "./useOPFSStore";
 
 const FileInput = () => {
   const inputUrlRef = React.useRef<HTMLInputElement>(null);
@@ -10,6 +11,7 @@ const FileInput = () => {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const { setBlobUrl, blobUrl, clearBlobUrl } = useStore();
+  const { actions } = useOPFSStore();
 
   async function onDownloadFile(file: File) {
     if (blobUrl) {
@@ -18,6 +20,7 @@ const FileInput = () => {
     try {
       setLoading(true);
       setError(null);
+      await actions.addFile(file);
       const blobUrl = URL.createObjectURL(file);
       setBlobUrl(blobUrl);
       audioBlobStorage.set("audioBlobUrl", blobUrl);
