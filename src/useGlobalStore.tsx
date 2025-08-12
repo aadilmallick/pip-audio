@@ -11,10 +11,12 @@ type Store = {
 
 export const useStore = create<Store>()((set) => ({
   blobUrl: null,
+  selectedFile: null,
   setBlobUrl: (url) => set(() => ({ blobUrl: url })),
   clearBlobUrl: (url) => {
     URL.revokeObjectURL(url); // Revoke the old blob URL to free up memory
     audioBlobStorage.set("audioBlobUrl", null); // Clear the previous blob URL from local storage
     set(() => ({ blobUrl: null })); // Clear the previous blob URL
   },
+  setSelectedFile: (file) => set(() => ({ selectedFile: file })),
 }));
