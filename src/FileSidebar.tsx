@@ -4,14 +4,14 @@ import { useStore } from "./useGlobalStore";
 
 export const FileSidebar = () => {
   const { files, actions } = useOPFSStore();
-  const { setSelectedFile } = useStore();
+  const { loadOPFSFile } = useStore();
 
   React.useEffect(() => {
     actions.init();
   }, [actions]);
 
   const onFileClick = (file: FileSystemFileHandle) => {
-    setSelectedFile(file);
+    loadOPFSFile(file);
   };
 
   const onDeleteClick = (e: React.MouseEvent, fileName: string) => {

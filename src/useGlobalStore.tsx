@@ -7,9 +7,10 @@ type Store = {
   clearBlobUrl: (url: string) => void;
   selectedFile: FileSystemFileHandle | null;
   setSelectedFile: (file: FileSystemFileHandle) => void;
+  loadOPFSFile: (fileHandle: FileSystemFileHandle) => Promise<void>;
 };
 
-export const useStore = create<Store>()((set) => ({
+export const useStore = create<Store>()((set, get) => ({
   blobUrl: null,
   selectedFile: null,
   setBlobUrl: (url) => set(() => ({ blobUrl: url })),
@@ -19,4 +20,13 @@ export const useStore = create<Store>()((set) => ({
     set(() => ({ blobUrl: null })); // Clear the previous blob URL
   },
   setSelectedFile: (file) => set(() => ({ selectedFile: file })),
+  loadOPFSFile: async (fileHandle) => {
+    const file = await fileHandle.getFile();
+    const blobUrl = URL.createObjectURL(file);
+    const currentBlobUrl = get().blobUrl;
+    if (currentBlobUrl) {
+      get().clearBlobUrl(currentBlobUrl);
+    }
+    set(() => ({ blobUrl }));
+  },
 }));
